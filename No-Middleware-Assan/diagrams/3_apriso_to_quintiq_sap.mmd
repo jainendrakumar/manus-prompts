@@ -1,0 +1,35 @@
+sequenceDiagram
+    participant Apriso as Apriso MES
+    participant DDM as Quintiq DDM
+    participant QuintiqCP as Quintiq CP
+    participant SAP as SAP (PP Module)
+
+    Apriso->>+DDM: POST /v1/apriso/productionactual
+    Note right of Apriso: (Payload contains ProductionActualReported)
+
+    DDM->>DDM: 1. Insert into INT_DDM_INBOX
+    DDM-->>-Apriso: 202 Accepted
+
+    activate DDM
+    Note over DDM: Async Processing (Multicast)
+    DDM->>DDM: 2. Validate & Transform
+    DDM->>DDM: 3a. Create Quintiq-formatted message
+    DDM->>DDM: 3b. Create SAP-formatted message
+    DDM->>DDM: 4. Insert two records into INT_DDM_OUTBOX (one for Quintiq, one for SAP)
+    deactivate DDM
+
+    par
+        activate DDM
+        Note over DDM: Deliver to Quintiq
+        DDM->>+QuintiqCP: POST /api/schedule/actuals
+        QuintiqCP-->>-DDM: 200 OK
+        DDM->>DDM: Update Outbox record 1 (status=DELIVERED)
+        deactivate DDM
+    and
+        activate DDM
+        Note over DDM: Deliver to SAP
+        DDM->>+SAP: POST /api/sap/confirmation
+        SAP-->>-DDM: 200 OK
+        DDM->>DDM: Update Outbox record 2 (status=DELIVERED)
+        deactivate DDM
+    end

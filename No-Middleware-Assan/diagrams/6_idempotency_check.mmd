@@ -1,0 +1,19 @@
+sequenceDiagram
+    participant SourceApp as Source App
+    participant DDM_API as DDM API
+    participant DDM_Inbox as INT_DDM_INBOX
+
+    Note over SourceApp: Network issue causes a retry
+    SourceApp->>+DDM_API: 1. POST /v1/event (idempotencyKey=\'key-123\')
+    DDM_API->>+DDM_Inbox: 2. INSERT record (key=\'key-123\', status=\'RECEIVED\')
+    DDM_API-->>-SourceApp: (Response is lost)
+
+    SourceApp->>+DDM_API: 3. RETRY: POST /v1/event (idempotencyKey=\'key-123\')
+    DDM_API->>DDM_Inbox: 4. Attempt to INSERT record
+    Note over DDM_Inbox: DB unique constraint on (idempotencyKey, target) is violated
+    DDM_Inbox-->>-DDM_API: 5. DB Error (Unique Key Violation)
+
+    DDM_API->>+DDM_Inbox: 6. SELECT status FROM inbox WHERE idempotencyKey=\'key-123\'
+    DDM_Inbox-->>-DDM_API: 7. Returns current status (e.g., \'VALIDATED\')
+
+    DDM_API-->>-SourceApp: 8. 409 Conflict (or 202 Accepted to mimic success)

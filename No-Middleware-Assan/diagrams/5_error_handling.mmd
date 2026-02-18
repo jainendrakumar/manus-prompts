@@ -1,0 +1,24 @@
+sequenceDiagram
+    participant DDM_Outbox as DDM Outbox Process
+    participant TargetApp as Target App
+    participant DDM_Error as INT_DDM_ERROR
+    participant Admin as Administrator
+    participant DDM_API as DDM Admin API
+
+    Note over DDM_Outbox, TargetApp: Delivery attempts with exponential backoff
+    DDM_Outbox->>+TargetApp: 1. POST /api/endpoint (Attempt 1)
+    TargetApp-->>-DDM_Outbox: 503 Service Unavailable
+    DDM_Outbox->>DDM_Outbox: 2. Schedule Retry (e.g., in 5s)
+    Note over DDM_Outbox: ... more retries ...
+    DDM_Outbox->>+TargetApp: 3. POST /api/endpoint (Final Attempt)
+    TargetApp-->>-DDM_Outbox: 500 Internal Server Error
+
+    Note over DDM_Outbox: Max retries exceeded
+    DDM_Outbox->>+DDM_Error: 4. INSERT into error table (status=PENDING_REVIEW)
+    DDM_Outbox->>DDM_Outbox: 5. Mark outbox record as FAILED
+
+    Note over Admin, DDM_API: Manual Intervention
+    Admin->>+DDM_API: 6. POST /api/admin/replay/{error_id}
+    DDM_API->>DDM_Error: 7. Find error record
+    DDM_API->>DDM_Outbox: 8. Re-insert message into outbox (status=PENDING_DELIVERY)
+    DDM_API-->>-Admin: 200 OK

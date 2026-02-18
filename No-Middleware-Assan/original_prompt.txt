@@ -1,0 +1,202 @@
+ROLE
+You are Manus acting as an Enterprise Integration Architect + DELMIA Quintiq Integration Specialist for an ASSAN manufacturing landscape. You will produce an implementation-ready “No-Middleware Integration Design + DDM Data Contract Pack” for SAP ↔ Quintiq ↔ MES (Delmia Apriso), where DDM is the ONLY data transformer and router.
+
+PRIMARY OBJECTIVE
+Design a no-middleware integration (no ESB/iPaaS/broker) with clear, versioned data contracts, reliability patterns (idempotency, outbox/inbox, retries, replay), staging DB batch flows, and direct REST flows. The output must map 1:1 to the named components and schemas below and be suitable for project documentation and engineering implementation.
+
+HARD CONSTRAINTS (NON-NEGOTIABLE)
+- No middleware platform: NO ESB, NO iPaaS, NO message broker (Kafka/Rabbit/EventHub/etc.), NO workflow engine.
+- Direct connections only:
+  A) Batch/static/bulk via Staging DB (preferred) and/or flat files (fallback)
+  B) Transactional/near-real-time via direct REST to DDM and from DDM to targets
+- DDM is the ONLY transformation layer. DDM may persist messages (inbox/outbox/error) and provide replay tooling, but must NOT become an orchestration engine.
+- Explicit System-of-Record ownership per domain and strict governance for routing/BOM versions.
+
+NAMED COMPONENTS (USE THESE EXACT NAMES THROUGHOUT)
+SAP (ERP)
+- Integration DB schemas in SAP DB:
+  - DBTABPSIXXQQ
+  - DBTABQQXXPSI
+- SAP objects in scope: Material Master, Customer Master, Sales Orders/Demand, Inventory snapshot (if needed), Routing/BOM releases (planning-level)
+
+Quintiq Suite (Planning)
+- DP = Demand Planner
+- MP = Macro Planner
+- CP = Detailed / Constraint Planner (Scheduling)
+- OC = Order Combiner
+- MC-SCH = Maintenance Scheduler (maintenance windows/capacity constraints)
+- CR-SCH = Capacity/Resource Scheduler (calendars, shifts, resource constraints)
+- Quintiq SoR: planning, schedules, pegging, scenario runs, dispatch operations
+
+MES
+- Delmia Apriso (execution SoR): execution actuals, operation status, production confirmations, scrap/rework, machine/resource states, quality results
+
+DDM (Data Distribution Manager) — DATA TRANSFORMER + ROUTER + AUDIT
+- Responsibilities: schema validation, mapping, canonicalization, limited deterministic enrichment, routing, retries, audit logging, replay/reprocess
+- Prohibited: business decision logic, complex orchestration, broker-like pub/sub
+
+STAGING DB NAMING (USE THESE TABLE NAMES)
+- STG_SAP_DBTABPSIXXQQ.*
+- STG_SAP_DBTABQQXXPSI.*
+- STG_MES_APRISO.*
+- INT_DDM_AUDIT.*
+- INT_DDM_OUTBOX.*
+- INT_DDM_INBOX.*
+- INT_DDM_ERROR.*
+
+ENVIRONMENTS (MANDATORY)
+- QA and PROD must be fully separated (endpoints, DB schemas, credentials, audit partitions).
+- Include configuration and promotion strategy QA → PROD.
+
+DELIVERABLES (MUST OUTPUT ALL SECTIONS)
+
+1) Executive Summary (1 page)
+- What we are building, why “no middleware”, and how DDM enables reliability without an ESB.
+- Bullet list of key design decisions and risks.
+
+2) Architecture Overview
+- Conceptual architecture: components, boundaries, trust zones, protocols (REST + staging DB + optional file drop).
+- Detailed data flow narrative for:
+  - SAP→DDM→DP/MP/CP/OC/MC-SCH/CR-SCH
+  - Apriso→DDM→CP/MC-SCH/CR-SCH (and SAP if needed)
+  - Quintiq (DP/MP/CP/OC/MC-SCH/CR-SCH)→DDM→Apriso
+  - Quintiq (MP/CP)→DDM→SAP
+- “What is NOT allowed” section (explicit list of forbidden middleware patterns).
+
+3) System of Record (SoR) & Domain Ownership Matrix (TABLE)
+Include domains:
+- Materials, Customers, Sales Orders/Demand, Inventory Snapshot
+- Routings/BOM (planning vs execution split)
+- Work centers/resources/calendars/shifts
+- Schedule/dispatch operations
+- Execution actuals, scrap/rework, machine states, quality results
+For each: SoR, consumers, sync mode (batch/REST), frequency, criticality.
+
+4) Integration Patterns Without Middleware (Reliability)
+Design a robust delivery pattern using DDM persistence:
+- Canonical envelope with schemaVersion/eventId/eventType/occurredAt/source/target/correlationId/idempotencyKey/payload
+- Inbox/Outbox within DDM:
+  - INT_DDM_INBOX: de-duplication, validation results, processing state machine
+  - INT_DDM_OUTBOX: delivery attempts, backoff schedule, status
+  - INT_DDM_ERROR: dead-letter equivalent with replay controls
+- Idempotency strategy per message type (deterministic keys)
+- Retry/backoff policy, max retries, circuit-breaker behavior
+- Replay/reprocess flows by eventId/correlationId/batch_id
+- SLA/latency targets per message class (order deltas, schedule publish, actuals, master data)
+
+5) DDM Capability Model (DETAILED)
+- Responsibilities vs boundaries (what DDM does/does not do)
+- Transformation approach:
+  - mapping tables (code translations, key cross-references)
+  - validation layers (schema, referential, business checks)
+  - enrichment constraints (only deterministic from SoR data)
+- Routing approach:
+  - routing rules by plant/site, product family, environment
+- Observability:
+  - audit fields, correlation tracing, dashboards (counts, rejects, duplicates)
+- Config model:
+  - endpoint registry, credentials per env, schema registry, retry policy configuration
+
+6) Canonical Message Envelope (STANDARD)
+Provide:
+- JSON definition of the envelope
+- Explanation of each field
+- How versioning works (v1.0 → v1.1 non-breaking; v2.0 breaking)
+- How correlationId is chosen for each business flow
+
+7) Data Contract Pack (VERSIONED) — AT LEAST 10 CONTRACTS
+For each contract provide:
+- Contract name
+- Direction (producer → DDM → consumer)
+- Trigger/event semantics
+- Frequency/latency class
+- Required/optional fields (with types)
+- Business keys + referential constraints
+- Example JSON payload (realistic)
+- Validation rules
+- IdempotencyKey rule
+- Error codes on failure
+
+Minimum contracts you MUST include:
+SAP→DDM→DP/MP
+1) DemandSalesOrderUpsert (create/change/cancel)
+2) CustomerMasterUpsert
+3) MaterialMasterUpsert
+
+SAP→DDM→MP/CP
+4) RoutingReleasePlanningUpsert (routing/BOM versioned release)
+5) InventorySnapshotUpsert (if used; else still define and mark “optional”)
+
+Apriso→DDM→CP/MC-SCH/CR-SCH
+6) OperationStatusChanged (start/pause/complete)
+7) ProductionActualReported (good/scrap/rework)
+8) ResourceStateChanged (down/up + reason)
+
+CP/OC/MC-SCH/CR-SCH→DDM→Apriso
+9) SchedulePublishedDispatch (dispatchable operations + sequencing + planned times + alternates)
+
+MP/CP→DDM→SAP
+10) Choose ONE: PlannedOrderProposal OR DeliveryPromiseATPResult
+- Justify choice based on typical SAP process and planning authority.
+
+IMPORTANT: Contracts must explicitly reference how OC grouping/variant logic and MC-SCH/CR-SCH constraints are reflected (even if via fields like ruleSetId, constraintWindowId, maintenanceWindowRef, calendarRef).
+
+8) Staging DB / Batch Contracts (DETAILED)
+Define recommended table structures for:
+- STG_SAP_DBTABPSIXXQQ (sales orders/demand deltas)
+- STG_SAP_DBTABQQXXPSI (master + routing extracts)
+- STG_MES_APRISO (batch fallback for execution)
+- INT_DDM_AUDIT (batch runs, counts, checksums)
+Mandatory technical columns:
+- batch_id, extract_ts, source_system, payload_hash, row_status,
+  error_code, error_msg, processed_ts, retry_count
+Include:
+- Delta detection approach (hash or change timestamp)
+- Reconciliation approach (counts, missing key checks, checksum totals)
+- Data retention and purge strategy
+
+9) Error Handling & Governance
+- Standard HTTP responses (202/409/422/500/503) and DDM behavior
+- Error taxonomy + codes:
+  CONTRACT_VALIDATION, MAPPING_MISSING, KEY_NOT_FOUND,
+  VERSION_UNSUPPORTED, TARGET_TIMEOUT, TARGET_5XX, DUPLICATE,
+  BUSINESS_RULE_FAIL
+- Contract change process:
+  - schema registry approval
+  - compatibility policy
+  - QA regression suite before PROD promotion
+
+10) Security & Access
+- TLS everywhere
+- Prefer mTLS or OAuth2 client credentials; fallback API keys + IP allowlist
+- Least privilege DB accounts for staging schemas
+- Secrets management guidance (vault/secure store)
+- Audit requirements
+
+11) Sequence Diagrams (MANDATORY) — Provide 4 in Mermaid syntax
+A) SAP sales order change → DDM → DP/MP → replanning trigger
+B) CP schedule publish → DDM → Apriso dispatch
+C) Apriso actuals → DDM → CP/MC-SCH/CR-SCH and optionally → SAP confirmation
+D) Batch master/routing release → staging → DDM → Quintiq import
+
+12) Implementation Roadmap (PHASED)
+Provide 5 phases:
+1) Master data + routing batch (staging DB)
+2) Demand/order deltas (REST)
+3) Schedule publication (Quintiq → Apriso)
+4) Actuals feedback loop (Apriso → Quintiq and SAP)
+5) Hardening (replay tooling, monitoring, SLAs, performance)
+Include testing strategy:
+- schema/contract tests
+- idempotency/replay tests
+- end-to-end QA tests with golden datasets
+- load/volume tests
+
+FORMATTING REQUIREMENTS
+- Use crisp headings, tables, and implementation-level detail (timeouts, retries, keys).
+- Clearly label assumptions.
+- Avoid vague language; be explicit.
+- Output should be directly usable as project documentation.
+
+FINAL OUTPUT
+Produce the complete “No-Middleware SAP↔DDM↔Quintiq↔DDM↔MES Integration Design + Data Contract Pack” with tables, example payloads, and Mermaid sequence diagrams.

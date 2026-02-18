@@ -1,0 +1,27 @@
+sequenceDiagram
+    participant QuintiqCP as Quintiq CP
+    participant DDM as Quintiq DDM
+    participant Apriso as Apriso MES
+
+    QuintiqCP->>+DDM: POST /v1/quintiq/schedule
+    Note right of QuintiqCP: (Payload contains SchedulePublishedDispatch)
+
+    DDM->>DDM: 1. Insert into INT_DDM_INBOX
+    DDM-->>-QuintiqCP: 202 Accepted
+
+    activate DDM
+    Note over DDM: Async Processing
+    DDM->>DDM: 2. Validate & Transform to Apriso format
+    DDM->>DDM: 3. Insert into INT_DDM_OUTBOX
+    deactivate DDM
+
+    activate DDM
+    Note over DDM: Delivery Process
+    DDM->>+Apriso: POST /api/mes/dispatchlist
+    Apriso-->>-DDM: 200 OK
+    DDM->>DDM: 4. Update INT_DDM_OUTBOX (status=DELIVERED)
+    deactivate DDM
+
+    activate Apriso
+    Apriso->>Apriso: Update Work Center Dispatch Lists
+    deactivate Apriso

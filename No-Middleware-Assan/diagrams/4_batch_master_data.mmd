@@ -1,0 +1,23 @@
+sequenceDiagram
+    participant SAP as SAP (MM/PP)
+    participant StagingDB as Staging DB
+    participant DDM_Batch as DDM Batch Job
+    participant Quintiq as Quintiq
+
+    activate SAP
+    SAP->>+StagingDB: INSERT into STG_SAP_DBTABQQXXPSI
+    Note right of SAP: (Populates with new/changed master data)
+    deactivate SAP
+
+    Note over DDM_Batch: Scheduled Job Runs (e.g., every hour)
+    DDM_Batch->>+StagingDB: SELECT * FROM STG_SAP_DBTABQQXXPSI WHERE row_status = 'NEW'
+    StagingDB-->>-DDM_Batch: Returns batch of records
+
+    DDM_Batch->>+StagingDB: UPDATE records SET row_status = 'PROCESSING'
+
+    loop for each record in batch
+        DDM_Batch->>DDM_Batch: Transform SAP data to Quintiq format
+        DDM_Batch->>+Quintiq: POST /api/masterdata/{dataType}
+        Quintiq-->>-DDM_Batch: 200 OK
+        DDM_Batch->>+StagingDB: UPDATE record SET row_status = 'SUCCESS'
+    end

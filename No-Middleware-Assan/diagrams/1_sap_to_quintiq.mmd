@@ -1,0 +1,32 @@
+sequenceDiagram
+    participant SAP as SAP (SD Module)
+    participant DDM as Quintiq DDM
+    participant QuintiqDP as Quintiq DP/MP
+
+    SAP->>+DDM: POST /v1/sap/salesorder
+    Note right of SAP: (Payload contains SalesOrderUpsert)
+
+    DDM->>DDM: 1. Insert into INT_DDM_INBOX
+    DDM-->>-SAP: 202 Accepted
+
+    activate DDM
+    Note over DDM: Async Processing Begins
+    DDM->>DDM: 2. Validate (Idempotency, Schema)
+    alt Validation Fails
+        DDM->>DDM: 2a. Move to INT_DDM_ERROR
+    else Validation Succeeds
+        DDM->>DDM: 3. Transform SAP Order to Quintiq Canonical
+        DDM->>DDM: 4. Insert into INT_DDM_OUTBOX
+    end
+    deactivate DDM
+
+    activate DDM
+    Note over DDM: Delivery Process
+    DDM->>+QuintiqDP: POST /api/demand/order
+    QuintiqDP-->>-DDM: 200 OK
+    DDM->>DDM: 5. Update INT_DDM_OUTBOX (status=DELIVERED)
+    deactivate DDM
+
+    activate QuintiqDP
+    QuintiqDP->>QuintiqDP: Trigger Replanning Logic
+    deactivate QuintiqDP

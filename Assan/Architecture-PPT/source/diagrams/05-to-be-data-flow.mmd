@@ -1,0 +1,70 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart LR
+    subgraph SAP["SAP-ERP"]
+        SAPSALES["Sales Order<br/>Management"]
+        SAPMASTER["Master Data<br/>Management"]
+        SAPINV["Inventory<br/>Management"]
+        SAPSUPPLY["Supply Order<br/>Management"]
+    end
+    
+    subgraph QUINTIQ["Quintiq APS Solutions"]
+        DP["Quintiq DP<br/>Forecasting"]
+        MP["Quintiq MP<br/>Capacity &<br/>Material Planning"]
+        CP["Quintiq CP<br/>Company<br/>Planner"]
+        OC["Quintiq OC<br/>Order<br/>Combining"]
+        MCSCH["Quintiq MCSCH<br/>Casting<br/>Scheduler"]
+        CRSCH["Quintiq CRSCH<br/>Cold Rolling<br/>Scheduler"]
+        CMP["Quintiq CMP<br/>Charge Mix<br/>Planner"]
+    end
+    
+    subgraph APRISO["Apriso MES"]
+        MESD["Order Dressing"]
+        MESE["Production<br/>Execution"]
+        MESF["Firm WO<br/>Registry"]
+    end
+    
+    %% Data Flow Steps (numbered as in PPT)
+    SAPSALES -->|1. Sales Quotas| DP
+    SAPMASTER -->|BOM, prod ver.,<br/>cost info| DP
+    DP -->|Uncons. Demand<br/>Statistical Forecast| MP
+    
+    SAPMASTER -->|Products<br/>SKU definition| MP
+    MP -->|Constrained Demand<br/>Casting Demand| MCSCH
+    MP -->|Material Plan| CP
+    
+    SAPINV -->|Inventory| CP
+    SAPINV -->|Inventory| OC
+    CP -->|Flexi WOs<br/>Reservations| OC
+    CP -->|Planning Window| CRSCH
+    
+    OC -->|Firm WOs<br/>Patterns| CRSCH
+    OC -->|Firm WOs<br/>Patterns| MESD
+    
+    MCSCH -->|Casting Campaign<br/>Casting Demand| CMP
+    MCSCH -->|Firm WO &<br/>Reservation| MESD
+    
+    CRSCH -->|Schedules<br/>Sequencing| MESE
+    
+    MESD -->|Routing<br/>Dressing Info| CP
+    MESD -->|Routing<br/>Dressing Info| OC
+    
+    MESE -->|Production Feedback<br/>Execution Status| CP
+    MESE -->|Production Feedback| CRSCH
+    MESE -->|Production Feedback| MCSCH
+    
+    MESF -->|Firm WOs<br/>Registered| SAPSUPPLY
+    
+    CMP -->|Charge Mix<br/>Optimization| MESD
+    
+    %% Feedback Loops
+    MESE -.->|Feedback Loop| SAPINV
+    MESE -.->|Feedback Loop| SAPSALES
+    
+    classDef erp fill:#e8f4f8,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef quintiq fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef mes fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef dataflow fill:#fff9c4,stroke:#f57f17,stroke-width:1px,color:#000
+    
+    class SAP,SAPSALES,SAPMASTER,SAPINV,SAPSUPPLY erp
+    class QUINTIQ,DP,MP,CP,OC,MCSCH,CRSCH,CMP quintiq
+    class APRISO,MESD,MESE,MESF mes

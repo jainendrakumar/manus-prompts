@@ -1,0 +1,80 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph INPUTS["INPUTS"]
+        SAP["SAP-ERP<br/>Product Information<br/>SKU Definition<br/>Sales Orders"]
+        QUINTIQ["Quintiq Solutions<br/>Firm WOs<br/>Schedules<br/>Routing Info"]
+    end
+    
+    subgraph MES["APRISO MES"]
+        STEP1["1. Read Product Info<br/>from SAP"]
+        STEP2["2. Execute SKU Dressing<br/>Routing Generation"]
+        STEP3["3. Create Routing Chain<br/>Downstream to Upstream"]
+        STEP4["4. Register Firm WOs<br/>in Firm WO Registry"]
+        STEP5["5. Execute Production<br/>Operations"]
+        STEP6["6. Collect Execution<br/>Feedback"]
+        STEP7["7. Update Work Order<br/>Status & Inventory"]
+        STEP8["8. Publish Feedback<br/>to Planning Systems"]
+        
+        STEP1 --> STEP2
+        STEP2 --> STEP3
+        STEP3 --> STEP4
+        STEP4 --> STEP5
+        STEP5 --> STEP6
+        STEP6 --> STEP7
+        STEP7 --> STEP8
+    end
+    
+    subgraph OUTPUTS["OUTPUTS"]
+        OUT1["Dressing Info<br/>to SAP"]
+        OUT2["Routing Info<br/>to CP & OC"]
+        OUT3["Firm WOs<br/>Registered"]
+        OUT4["Production Feedback<br/>to Quintiq"]
+        OUT5["Inventory Updates<br/>to SAP"]
+        OUT6["Operation Feedback<br/>to Schedulers"]
+    end
+    
+    subgraph FEEDBACK["FEEDBACK LOOPS"]
+        FB1["Execution Status<br/>Continuous"]
+        FB2["Inventory Changes<br/>Continuous"]
+        FB3["WO Status Changes<br/>Continuous"]
+    end
+    
+    %% Input connections
+    SAP --> STEP1
+    QUINTIQ --> STEP4
+    QUINTIQ --> STEP5
+    
+    %% Output connections
+    STEP2 --> OUT1
+    STEP3 --> OUT2
+    STEP4 --> OUT3
+    STEP8 --> OUT4
+    STEP7 --> OUT5
+    STEP6 --> OUT6
+    
+    %% Feedback connections
+    FB1 -.->|Continuous| STEP6
+    FB2 -.->|Continuous| STEP7
+    FB3 -.->|Continuous| STEP7
+    
+    %% Feedback to Planning
+    OUT4 -.->|Feedback Loop| QUINTIQ
+    OUT5 -.->|Feedback Loop| SAP
+    
+    %% Execution Details
+    EXEC["Execution Details:<br/>- Inventory Change<br/>- WO Status Change<br/>- Operation Status<br/>- Downtimes<br/>- Consumptions"]
+    EXEC -.->|Tracked in| STEP6
+    
+    classDef input fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef process fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:#000
+    classDef output fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef feedback fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef step fill:#e0e0e0,stroke:#424242,stroke-width:1px,color:#000
+    classDef exec fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class INPUTS,SAP,QUINTIQ input
+    class MES process
+    class STEP1,STEP2,STEP3,STEP4,STEP5,STEP6,STEP7,STEP8 step
+    class OUTPUTS,OUT1,OUT2,OUT3,OUT4,OUT5,OUT6 output
+    class FEEDBACK,FB1,FB2,FB3 feedback
+    class EXEC exec

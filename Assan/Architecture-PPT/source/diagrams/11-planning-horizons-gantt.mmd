@@ -1,0 +1,38 @@
+%%{init: {'gantt': {'fontSize': 11, 'fontFamily': 'arial'}, 'theme': 'base'}}%%
+gantt
+    title Planning Horizons - Assan APS Program
+    dateFormat YYYY-MM-DD
+    
+    section S&OP
+    S&OP Planning :sop, 2026-02-18, 450d
+    Demand Planner (DP) :dp, 2026-02-18, 450d
+    Macro Planner (MP) :mp, 2026-02-18, 450d
+    
+    section Casting Campaign
+    Campaign Planning :camp, 2026-02-18, 28d
+    Casting Scheduler (MCSCH) :mcsch, 2026-02-18, 28d
+    Charge Mix Planner (CMP) :cmp, 2026-02-18, 28d
+    
+    section Company Planning
+    Master Production Schedule :mps, 2026-02-18, 84d
+    Company Planner (CP) :cp, 2026-02-18, 84d
+    
+    section Order Combination
+    Order Combining :oc, 2026-02-18, 28d
+    Order Combiner (OC) :occ, 2026-02-18, 28d
+    
+    section Scheduling
+    Detailed Scheduling :sched, 2026-02-18, 3d
+    Cold Rolling Scheduler (CRSCH) :crsch, 2026-02-18, 3d
+    
+    section Execution
+    Manufacturing Execution :exec, 2026-02-18, 1d
+    Apriso MES :mes, 2026-02-18, 1d
+    
+    %% Milestones
+    milestone S&OP Horizon (15m) :crit, 2026-02-18, 1d
+    milestone Campaign Horizon (4w) :crit, 2026-02-18, 1d
+    milestone MPS Horizon (12w) :crit, 2026-02-18, 1d
+    milestone OC Horizon (4w) :crit, 2026-02-18, 1d
+    milestone SCH Horizon (3d) :crit, 2026-02-18, 1d
+    milestone Execution (now) :crit, 2026-02-18, 1d

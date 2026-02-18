@@ -1,0 +1,77 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph TUZLA["TUZLA PLANT"]
+        T_SCRAP["🔺 Scrap"]
+        T_RE["RE WO"]
+        T_PRIMARY["🔺 Primary/Scrap"]
+        T_MC["MC WO"]
+        T_CASTED["🔺 Casted Coil"]
+        T_CR["CR WO"]
+        T_COIL["🔺 Coil & Sheet"]
+        T_SH["SH WO"]
+        T_FINISHED["🔺 Finished Good"]
+        
+        T_SCRAP -->|Supply & Demand| T_RE
+        T_RE -->|Supply & Demand| T_PRIMARY
+        T_PRIMARY -->|Supply & Demand| T_MC
+        T_MC -->|Supply & Demand| T_CASTED
+        T_CASTED -->|Supply & Demand| T_CR
+        T_CR -->|Supply & Demand| T_COIL
+        T_COIL -->|Supply & Demand| T_SH
+        T_SH -->|Supply & Demand| T_FINISHED
+    end
+    
+    subgraph DILOVASI["DILOVAȘI PLANT"]
+        D_SCRAP["🔺 Scrap"]
+        D_RE["RE WO"]
+        D_PRIMARY["🔺 Primary/Scrap"]
+        D_MC["MC WO"]
+        D_CASTED["🔺 Casted Coil"]
+        D_CR["CR WO"]
+        D_COIL["🔺 Coil & Sheet"]
+        D_SH["SH WO"]
+        D_FINISHED["🔺 Finished Good"]
+        
+        D_SCRAP -->|Supply & Demand| D_RE
+        D_RE -->|Supply & Demand| D_PRIMARY
+        D_PRIMARY -->|Supply & Demand| D_MC
+        D_MC -->|Supply & Demand| D_CASTED
+        D_CASTED -->|Supply & Demand| D_CR
+        D_CR -->|Supply & Demand| D_COIL
+        D_COIL -->|Supply & Demand| D_SH
+        D_SH -->|Supply & Demand| D_FINISHED
+    end
+    
+    subgraph EXTERNAL["EXTERNAL STORAGE / PURCHASE STORAGE"]
+        EXT["TID: External Storage<br/>Purchase Storage"]
+    end
+    
+    %% Inter-plant transfers
+    T_CASTED -.->|Transport Orders<br/>WIP Transfer| EXT
+    EXT -.->|Transport Orders<br/>WIP Transfer| D_CR
+    
+    T_COIL -.->|Transport Orders<br/>WIP Transfer| EXT
+    EXT -.->|Transport Orders<br/>WIP Transfer| D_SH
+    
+    D_CASTED -.->|Transport Orders<br/>WIP Transfer| EXT
+    EXT -.->|Transport Orders<br/>WIP Transfer| T_CR
+    
+    %% Scope indicators
+    T_MC -.->|MC-SCH Scope| SCOPE1["MC-SCH = Scope"]
+    T_CR -.->|CP/CR-SCH Scope| SCOPE2["CP/CR-SCH = Scope"]
+    D_MC -.->|MC-SCH Scope| SCOPE1
+    D_CR -.->|CP/CR-SCH Scope| SCOPE2
+    
+    NOTE["<b>Note:</b><br/>WIP material (a coil between operations<br/>within a WO) may transfer between plants<br/>as part of its routing"]
+    
+    classDef tuzla fill:#e3f2fd,stroke:#1976d2,stroke-width:2px,color:#000
+    classDef dilovasi fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#000
+    classDef external fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+    classDef scope fill:#fff9c4,stroke:#f57f17,stroke-width:1px,color:#000
+    classDef note fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class TUZLA,T_SCRAP,T_RE,T_PRIMARY,T_MC,T_CASTED,T_CR,T_COIL,T_SH,T_FINISHED tuzla
+    class DILOVASI,D_SCRAP,D_RE,D_PRIMARY,D_MC,D_CASTED,D_CR,D_COIL,D_SH,D_FINISHED dilovasi
+    class EXTERNAL,EXT external
+    class SCOPE1,SCOPE2 scope
+    class NOTE note

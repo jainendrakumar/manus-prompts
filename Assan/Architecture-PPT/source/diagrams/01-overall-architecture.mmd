@@ -1,0 +1,79 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base', 'themeVariables': { 'primaryColor': '#1f77b4', 'primaryBorderColor': '#0d47a1', 'lineColor': '#5a5a5a', 'tertiaryColor': '#fff2cc'}}}%%
+flowchart LR
+    subgraph SAP["SAP-ERP<br/>(System of Record)"]
+        SAPM["Master Data<br/>Management"]
+        SAPS["Sales Order<br/>Management"]
+        SAPI["Inventory<br/>Management"]
+        SAPO["Supply Order<br/>Management"]
+    end
+
+    subgraph QDM["Quintiq Data Manager<br/>(Integration Middleware)"]
+        QDMF["Data Facade<br/>& Transformation"]
+        QDMM["Multi-casting<br/>Support"]
+        QDMA["Asynchronous<br/>Messaging"]
+    end
+
+    subgraph Quintiq["Quintiq APS Solutions"]
+        DP["Quintiq Demand<br/>Planner<br/>(DP)"]
+        MP["Quintiq Macro<br/>Planner<br/>(MP)"]
+        CP["Quintiq Company<br/>Planner<br/>(CP)"]
+        OC["Quintiq Order<br/>Combiner<br/>(OC)"]
+        MCSCH["Quintiq Casting<br/>Scheduler<br/>(MCSCH)"]
+        CRSCH["Quintiq Cold Rolling<br/>Scheduler<br/>(CRSCH)"]
+        CMP["Quintiq Charge Mix<br/>Planner<br/>(CMP)"]
+    end
+
+    subgraph MES["Apriso MES<br/>(Manufacturing Execution)"]
+        MESD["Order Dressing<br/>& Routing"]
+        MESE["Production<br/>Execution"]
+        MESF["Firm WO<br/>Registry"]
+    end
+
+    %% SAP to QDM
+    SAP -->|Master Data, Inventory,<br/>Sales Orders| QDM
+    
+    %% QDM to Quintiq
+    QDM -->|Distributed Data| DP
+    QDM -->|Distributed Data| MP
+    QDM -->|Distributed Data| CP
+    QDM -->|Distributed Data| OC
+    QDM -->|Distributed Data| MCSCH
+    QDM -->|Distributed Data| CRSCH
+    QDM -->|Distributed Data| CMP
+    
+    %% Quintiq to QDM
+    DP -->|Demand Forecast| QDM
+    MP -->|Capacity & Material Plan| QDM
+    CP -->|Flexi WOs, Reservations| QDM
+    OC -->|Firm WOs, Patterns| QDM
+    MCSCH -->|Casting Campaign| QDM
+    CRSCH -->|Schedules| QDM
+    CMP -->|Charge Mix Plan| QDM
+    
+    %% QDM to MES
+    QDM -->|Routing, Dressing Info| MES
+    
+    %% MES to QDM
+    MES -->|Production Feedback,<br/>Firm WOs| QDM
+    
+    %% MES to SAP
+    MES -->|Feedback, Confirmations| SAP
+    
+    %% Quintiq Internal Dependencies
+    DP -->|FG Forecast| MP
+    MP -->|Casting Demand| MCSCH
+    MP -->|Material Plan| CP
+    CP -->|Flexi WOs| OC
+    CP -->|Planning Window| CRSCH
+    OC -->|Firm WOs| CRSCH
+    MCSCH -->|Casting Campaign| CMP
+    
+    classDef erp fill:#e8f4f8,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef middleware fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef quintiq fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef mes fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    
+    class SAP,SAPM,SAPS,SAPI,SAPO erp
+    class QDM,QDMF,QDMM,QDMA middleware
+    class Quintiq,DP,MP,CP,OC,MCSCH,CRSCH,CMP quintiq
+    class MES,MESD,MESE,MESF mes

@@ -1,0 +1,77 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph INPUTS["INPUTS"]
+        SAP1["SAP-ERP<br/>Sales Orders"]
+        SAP2["SAP-ERP<br/>Inventory"]
+        SAP3["SAP-ERP<br/>Products & Routings"]
+        MP["Quintiq MP<br/>Casting Demand<br/>Material Plan"]
+        MES["Apriso MES<br/>Firm Reservations<br/>Dressing Info"]
+    end
+    
+    subgraph CP["QUINTIQ COMPANY PLANNER (CP)"]
+        STEP1["1. Read Sales Orders<br/>from SAP"]
+        STEP2["2. Read Available<br/>Inventory"]
+        STEP3["3. Create/Update<br/>Flexi Orders"]
+        STEP4["4. Dress Orders with<br/>Primary & Alternative Routes"]
+        STEP5["5. Confirm/Update<br/>Sales Order Dates"]
+        STEP6["6. Planning Run:<br/>Replenishment & Reservation"]
+        STEP7["7. Create Firm<br/>Work Orders"]
+        
+        STEP1 --> STEP2
+        STEP2 --> STEP3
+        STEP3 --> STEP4
+        STEP4 --> STEP5
+        STEP5 --> STEP6
+        STEP6 --> STEP7
+    end
+    
+    subgraph OUTPUTS["OUTPUTS"]
+        OUT1["Flexi WOs<br/>to OC"]
+        OUT2["Firm WOs<br/>to SAP & MES"]
+        OUT3["Sales Order<br/>Confirmation"]
+        OUT4["WO Proposals<br/>to MES"]
+        OUT5["Paint Reservation<br/>to MES"]
+    end
+    
+    subgraph FEEDBACK["FEEDBACK LOOPS"]
+        FB1["Production Feedback<br/>from MES"]
+        FB2["Dressing Info<br/>from MES"]
+    end
+    
+    %% Input connections
+    SAP1 --> STEP1
+    SAP2 --> STEP2
+    SAP3 --> STEP4
+    MP --> STEP3
+    MES --> STEP4
+    MES --> STEP6
+    
+    %% Output connections
+    STEP3 --> OUT1
+    STEP7 --> OUT2
+    STEP5 --> OUT3
+    STEP7 --> OUT4
+    STEP6 --> OUT5
+    
+    %% Feedback connections
+    FB1 -.->|Continuous| STEP5
+    FB1 -.->|Continuous| STEP6
+    FB2 -.->|Continuous| STEP4
+    
+    %% Planning Horizon
+    HORIZON["Planning Horizon:<br/>1-12 weeks"]
+    CP -.->|Horizon| HORIZON
+    
+    classDef input fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef process fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef output fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef feedback fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef step fill:#e0e0e0,stroke:#424242,stroke-width:1px,color:#000
+    classDef horizon fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class INPUTS,SAP1,SAP2,SAP3,MP,MES input
+    class CP process
+    class STEP1,STEP2,STEP3,STEP4,STEP5,STEP6,STEP7 step
+    class OUTPUTS,OUT1,OUT2,OUT3,OUT4,OUT5 output
+    class FEEDBACK,FB1,FB2 feedback
+    class HORIZON horizon

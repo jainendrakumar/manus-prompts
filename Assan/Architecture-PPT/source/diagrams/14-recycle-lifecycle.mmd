@@ -1,0 +1,74 @@
+%%{init: {'theme': 'base'}}%%
+stateDiagram-v2
+    [*] --> SCRAP_EXECUTION: SAP: Execute TOs for Scrap
+    
+    SCRAP_EXECUTION --> MES_INVENTORY_UPDATE: Apriso: Update MES Inventory
+    MES_INVENTORY_UPDATE --> GUIDANCE_PROPOSAL: Apriso: Guidance Proposals Created
+    
+    GUIDANCE_PROPOSAL --> CONFIRM_PROPOSAL: Apriso: Confirm Proposal
+    CONFIRM_PROPOSAL --> TOS_CREATED: Apriso: TOs Created
+    
+    TOS_CREATED --> MF_LOAD_REGISTER: Apriso: Register MF Load
+    MF_LOAD_REGISTER --> MANUAL_SELECTION: Operator: Manual Selection in MES
+    
+    MANUAL_SELECTION --> WO_STARTED: Apriso: WO Started
+    WO_STARTED --> INPUT_REGISTERED: Apriso: Input Registered
+    INPUT_REGISTERED --> EXECUTED: Apriso: Executed
+    
+    EXECUTED --> TRANSFER_MF: Apriso: Transfer to MF
+    TRANSFER_MF --> CMP_PROPOSAL: CMP: Raw Material Proposal
+    
+    CMP_PROPOSAL --> CHARGE_LOAD_TIMING: Apriso: Charge Mix Load Timings
+    CHARGE_LOAD_TIMING --> LOAD_RELEASED: Apriso: Load Released
+    
+    LOAD_RELEASED --> GUIDANCE_SELECTED: Apriso: Guidance Selected
+    GUIDANCE_SELECTED --> WO_TO_CREATED: Apriso: WO & TO Created
+    
+    WO_TO_CREATED --> OUTPUT_CLASSIFIED: Apriso: Output Classified
+    OUTPUT_CLASSIFIED --> CLASSIFICATION_DECISION: Quality Decision
+    
+    CLASSIFICATION_DECISION --> LIQUID_OUTPUT: Liquid
+    LIQUID_OUTPUT --> STORE_INGOTS: Apriso: Store Ingots
+    STORE_INGOTS --> FEEDBACK_SAP: SAP: Record Feedback
+    
+    CLASSIFICATION_DECISION --> SOLID_OUTPUT: Solid
+    SOLID_OUTPUT --> FEEDBACK_SAP
+    
+    FEEDBACK_SAP --> SCRAP_TOS_EXECUTE: SAP: Execute TOs for Scrap
+    SCRAP_TOS_EXECUTE --> FINAL_INVENTORY: Apriso: Update Final Inventory
+    FINAL_INVENTORY --> [*]
+    
+    note right of SCRAP_EXECUTION
+        Scrap Material Collection
+        Transport Order Execution
+    end note
+    
+    note right of GUIDANCE_PROPOSAL
+        Guidance for Recycle Process
+        Operator Assistance
+    end note
+    
+    note right of MF_LOAD_REGISTER
+        Melting Furnace Load
+        Liquid & Solid Registration
+    end note
+    
+    note right of MANUAL_SELECTION
+        Operator Manual Selection
+        In MES System
+    end note
+    
+    note right of CMP_PROPOSAL
+        Charge Mix Planning
+        Raw Material Optimization
+    end note
+    
+    note right of OUTPUT_CLASSIFIED
+        Output Classification
+        Liquid or Solid
+    end note
+    
+    note right of FEEDBACK_SAP
+        Feedback to SAP
+        Inventory Updates
+    end note

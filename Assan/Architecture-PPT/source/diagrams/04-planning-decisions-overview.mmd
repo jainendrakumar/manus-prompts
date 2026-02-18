@@ -1,0 +1,86 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart LR
+    subgraph SOP["S&OP<br/>(15m → 3m)"]
+        DP["Demand Planner<br/>Statistical Forecast"]
+        MP["Macro Planner<br/>Capacity & Material Plan"]
+        DP -->|FG Forecast| MP
+    end
+    
+    subgraph CASTING["CASTING CAMPAIGN<br/>(4w → 3d)"]
+        MCSCH["Casting Scheduler<br/>Campaign Planning"]
+        CMP["Charge Mix Planner<br/>Charge Optimization"]
+        MCSCH -->|Campaign Plan| CMP
+    end
+    
+    subgraph MPS["COMPANY PLANNING<br/>(12w → 3d)"]
+        CP["Company Planner<br/>Order Acceptance<br/>Flexi WO Generation"]
+    end
+    
+    subgraph OC["ORDER COMBINATION<br/>(4w → 3d)"]
+        OC_MOD["Order Combiner<br/>Pattern Optimization<br/>Firm WO Generation"]
+    end
+    
+    subgraph SCHED["SCHEDULING<br/>(3d → now)"]
+        CRSCH["Scheduler<br/>Sequencing & Batching<br/>Schedule Publication"]
+    end
+    
+    subgraph MES["EXECUTION<br/>(now)"]
+        MES_MOD["Apriso MES<br/>Order Dressing<br/>Production Execution<br/>Feedback Loops"]
+    end
+    
+    %% Planning Flows
+    SOP -->|Casting Demand| CASTING
+    SOP -->|Material Plan| MPS
+    CASTING -->|Campaign WOs| MPS
+    MPS -->|Flexi WOs| OC
+    OC -->|Firm WOs| SCHED
+    SCHED -->|Schedules| MES
+    MES -->|Feedback| SCHED
+    MES -->|Feedback| MPS
+    MES -->|Feedback| CASTING
+    
+    %% External Inputs
+    EXT1["Sales History<br/>Forecast Inputs"]
+    EXT2["Sales Orders<br/>Quotas"]
+    EXT3["Inventory<br/>Available Coils"]
+    EXT4["Firm WOs<br/>Planning Window"]
+    EXT5["Firm WOs<br/>Planning Window"]
+    
+    EXT1 -->|Input| DP
+    EXT2 -->|Input| CP
+    EXT3 -->|Input| OC_MOD
+    EXT4 -->|Input| CRSCH
+    EXT5 -->|Input| MES_MOD
+    
+    %% Planning Horizons
+    H1["Horizon:<br/>15 months"]
+    H2["Horizon:<br/>4 weeks"]
+    H3["Horizon:<br/>12 weeks"]
+    H4["Horizon:<br/>4 weeks"]
+    H5["Horizon:<br/>3 days"]
+    H6["Horizon:<br/>Now"]
+    
+    SOP -.->|Planning Horizon| H1
+    CASTING -.->|Planning Horizon| H2
+    MPS -.->|Planning Horizon| H3
+    OC -.->|Planning Horizon| H4
+    SCHED -.->|Planning Horizon| H5
+    MES -.->|Planning Horizon| H6
+    
+    classDef sop fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef casting fill:#ffccbc,stroke:#d84315,stroke-width:2px,color:#000
+    classDef mps fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef oc fill:#ffe0b2,stroke:#e65100,stroke-width:2px,color:#000
+    classDef sched fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef mes fill:#d1c4e9,stroke:#512da8,stroke-width:2px,color:#000
+    classDef external fill:#fff9c4,stroke:#f57f17,stroke-width:1px,color:#000
+    classDef horizon fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class SOP,DP,MP sop
+    class CASTING,MCSCH,CMP casting
+    class MPS,CP mps
+    class OC,OC_MOD oc
+    class SCHED,CRSCH sched
+    class MES,MES_MOD mes
+    class EXT1,EXT2,EXT3,EXT4,EXT5 external
+    class H1,H2,H3,H4,H5,H6 horizon

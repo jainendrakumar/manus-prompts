@@ -1,0 +1,83 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart LR
+    SCRAP["🔺 Scrap<br/>(Stocking Point)"]
+    REWO["RE WO<br/>(Recycling)"]
+    PRIMARY["Primary/<br/>Scrap<br/>(Stocking Point)"]
+    
+    MCWO["MC WO<br/>(Melting &<br/>Casting)"]
+    CASTEDINPUT["🔺 Casting<br/>Input<br/>(Stocking Point)"]
+    
+    CASTEDCOIL["🔺 Casted<br/>Coil<br/>(Stocking Point)"]
+    CRWO["CR* WO<br/>(Cold<br/>Rolling)"]
+    
+    COILSHEET["🔺 Coil &<br/>Sheet Coil<br/>(Stocking Point)"]
+    SHWO["SH WO<br/>(Coil & Sheet<br/>Downstream)"]
+    
+    FINISHED["🔺 Finished<br/>Good<br/>(Stocking Point)"]
+    COL["Sheet / Foil /<br/>Painted COL<br/>(Customer Order)"]
+    
+    %% Foil Path
+    FOILCOIL["Foil Coil PO<br/>(Film/Paper)"]
+    FOILSTOCK["🔺 Foil<br/>Stock<br/>(Stocking Point)"]
+    FCWO["FC WO<br/>(Foil<br/>Downstream)"]
+    
+    %% Paint Path
+    PAINTCOIL["Paint Coil PO<br/>(Film/Paper/Paint)"]
+    PAINTSTOCK["🔺 Paint<br/>Stock<br/>(Stocking Point)"]
+    PCWO["PC WO<br/>(Paint<br/>Downstream)"]
+    PAINTPREP["Paint Prep**<br/>(Non-Metal WO)"]
+    
+    %% Main Flow
+    SCRAP -->|Supply & Demand| REWO
+    REWO -->|Supply & Demand| PRIMARY
+    PRIMARY -->|Supply & Demand| MCWO
+    MCWO -->|Supply & Demand| CASTEDINPUT
+    CASTEDINPUT -->|Supply & Demand| CASTEDCOIL
+    CASTEDCOIL -->|Supply & Demand| CRWO
+    CRWO -->|Supply & Demand| COILSHEET
+    COILSHEET -->|Supply & Demand| SHWO
+    SHWO -->|Supply & Demand| FINISHED
+    FINISHED -->|Supply & Demand| COL
+    
+    %% Foil Branch
+    CASTEDCOIL -->|Supply & Demand| FOILCOIL
+    FOILCOIL -->|Supply & Demand| FOILSTOCK
+    FOILSTOCK -->|Supply & Demand| FCWO
+    FCWO -->|Supply & Demand| FINISHED
+    
+    %% Paint Branch
+    CASTEDCOIL -->|Supply & Demand| PAINTCOIL
+    PAINTCOIL -->|Supply & Demand| PAINTSTOCK
+    PAINTSTOCK -->|Supply & Demand| PCWO
+    PCWO -->|Supply & Demand| FINISHED
+    PAINTPREP -->|Scrap Activities| PAINTSTOCK
+    
+    %% Scope Indicators
+    SCOPE1["❌ Not APS Scope"]
+    SCOPE2["MC-SCH = Scope"]
+    SCOPE3["CP / CR-SCH = Scope"]
+    
+    SCRAP -.->|Out of Scope| SCOPE1
+    PRIMARY -.->|Out of Scope| SCOPE1
+    CASTEDINPUT -.->|Melting & Casting| SCOPE2
+    CRWO -.->|Cold Rolling| SCOPE3
+    SHWO -.->|Downstream| SCOPE3
+    
+    %% Legend
+    LEGEND["<b>Legend:</b><br/>🔺 Stocking Point<br/>WO = Work Order<br/>RE = Recycling<br/>MC = Melting & Casting<br/>CR = Cold Rolling<br/>SH = Coil & Sheet<br/>FC = Foil Downstream<br/>PC = Paint Downstream<br/>** Paint Prep not in CP scope,<br/>in CR-SCH scope"]
+    
+    classDef stockingPoint fill:#ffd700,stroke:#ff8c00,stroke-width:2px,color:#000
+    classDef workOrder fill:#4169e1,stroke:#00008b,stroke-width:2px,color:#fff
+    classDef operation fill:#e0e0e0,stroke:#696969,stroke-width:1px,color:#000
+    classDef customerOrder fill:#90ee90,stroke:#228b22,stroke-width:2px,color:#000
+    classDef outOfScope fill:#ff6b6b,stroke:#8b0000,stroke-width:2px,color:#fff
+    classDef scope fill:#fff9c4,stroke:#f57f17,stroke-width:1px,color:#000
+    classDef legend fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class SCRAP,CASTEDINPUT,CASTEDCOIL,COILSHEET,FINISHED,FOILSTOCK,PAINTSTOCK stockingPoint
+    class REWO,MCWO,CRWO,SHWO,FCWO,PCWO workOrder
+    class FOILCOIL,PAINTCOIL operation
+    class COL customerOrder
+    class PAINTPREP outOfScope
+    class SCOPE1,SCOPE2,SCOPE3 scope
+    class LEGEND legend

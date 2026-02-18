@@ -1,0 +1,72 @@
+%%{init: {'theme': 'base'}}%%
+stateDiagram-v2
+    [*] --> WO_PROPOSAL: MCSCH: WO Proposal - Roll Changeover
+    
+    WO_PROPOSAL --> TIMING_STORED: Apriso: Store Roll Changeover Timing Info
+    TIMING_STORED --> EXECUTION_READY: Apriso: Ready for Execution
+    
+    EXECUTION_READY --> WO_EXECUTED: Apriso: WOs Executed
+    WO_EXECUTED --> DOWNTIME_STARTED: Apriso: Downtime Started (Campaign Downtime)
+    
+    DOWNTIME_STARTED --> MO_CREATED: Apriso: MO Created and Sent
+    MO_CREATED --> SAP_MO_CREATE: SAP: Create Maintenance Order
+    
+    SAP_MO_CREATE --> SAP_MO_CONFIRM: SAP: Confirm Maintenance Order
+    SAP_MO_CONFIRM --> MAINTENANCE_EXECUTION: Maintenance Team: Execute Maintenance
+    
+    MAINTENANCE_EXECUTION --> DOWNTIME_COMPLETED: Apriso: Downtime Completed
+    DOWNTIME_COMPLETED --> DUAL_CONFIRMATION: Apriso: Dual Confirmation
+    
+    DUAL_CONFIRMATION --> PRODUCTION_CONFIRM: Production Team: Confirm Completion
+    DUAL_CONFIRMATION --> MAINTENANCE_CONFIRM: Maintenance Team: Confirm Completion
+    
+    PRODUCTION_CONFIRM --> SAP_DOWNTIME_WO: SAP: Create Downtime WO
+    MAINTENANCE_CONFIRM --> SAP_DOWNTIME_WO
+    
+    SAP_DOWNTIME_WO --> DURATION_SAVED: MCSCH: Save Downtime Duration
+    DURATION_SAVED --> REPLAN_CHECK: MCSCH: Check if Replan Needed
+    
+    REPLAN_CHECK --> REPLAN_MANUAL: Manual Replan if Needed
+    REPLAN_MANUAL --> CAMPAIGN_RESUMED: Campaign Resumed
+    REPLAN_CHECK --> CAMPAIGN_RESUMED: No Replan Needed
+    
+    CAMPAIGN_RESUMED --> [*]
+    
+    %% Unplanned downtime path
+    EXECUTION_READY --> UNPLANNED_DOWNTIME: Unplanned Downtime Occurs
+    UNPLANNED_DOWNTIME --> DOWNTIME_STARTED
+    
+    note right of WO_PROPOSAL
+        Campaign Downtime Planning
+        Roll Changeover WO
+    end note
+    
+    note right of TIMING_STORED
+        Roll Changeover Timing
+        Stored in Apriso
+    end note
+    
+    note right of DOWNTIME_STARTED
+        Downtime Initiated
+        Can be Unplanned
+    end note
+    
+    note right of MO_CREATED
+        Maintenance Order for
+        Roll Regrinding
+    end note
+    
+    note right of DUAL_CONFIRMATION
+        Two-level Confirmation:
+        Production & Maintenance
+    end note
+    
+    note right of DURATION_SAVED
+        Actual Downtime Duration
+        Recorded for Analysis
+    end note
+    
+    note right of REPLAN_CHECK
+        Determine if Campaign
+        Replanning is Needed
+    end note

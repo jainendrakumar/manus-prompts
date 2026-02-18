@@ -1,0 +1,84 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph INPUTS["INPUTS"]
+        CP["Quintiq CP<br/>Firm WOs<br/>Planning Window"]
+        SAP["SAP-ERP<br/>Sales Orders<br/>Inventory"]
+        MES["Apriso MES<br/>Firm WOs & FFs<br/>Reservation Info"]
+    end
+    
+    subgraph CRSCH["QUINTIQ COLD ROLLING SCHEDULER (CRSCH)"]
+        STEP1["1. Read Firm WOs<br/>from MES"]
+        STEP2["2. Read Planning Window<br/>from CP"]
+        STEP3["3. Read Sales Orders<br/>& Inventories"]
+        STEP4["4. Read Reservation<br/>Information"]
+        STEP5["5. Sequence Operations<br/>CR, Annealing, Finishing"]
+        STEP6["6. Apply Sequencing<br/>Rules & Constraints"]
+        STEP7["7. Batch Operations<br/>if Required"]
+        STEP8["8. Create Schedule<br/>& Publish"]
+        
+        STEP1 --> STEP2
+        STEP2 --> STEP3
+        STEP3 --> STEP4
+        STEP4 --> STEP5
+        STEP5 --> STEP6
+        STEP6 --> STEP7
+        STEP7 --> STEP8
+    end
+    
+    subgraph OUTPUTS["OUTPUTS"]
+        OUT1["Schedules<br/>Published to MES"]
+        OUT2["Sequencing Info<br/>to MES"]
+        OUT3["Batching Info<br/>to MES"]
+        OUT4["Schedule Updates<br/>to CP"]
+    end
+    
+    subgraph FEEDBACK["FEEDBACK LOOPS"]
+        FB1["Scheduling Feedback<br/>from MES"]
+        FB2["Inventory Updates<br/>from MES"]
+    end
+    
+    %% Input connections
+    MES --> STEP1
+    CP --> STEP2
+    SAP --> STEP3
+    CP --> STEP4
+    
+    %% Output connections
+    STEP8 --> OUT1
+    STEP6 --> OUT2
+    STEP7 --> OUT3
+    STEP8 --> OUT4
+    
+    %% Feedback connections
+    FB1 -.->|Continuous| STEP5
+    FB2 -.->|Continuous| STEP3
+    
+    %% Planning Horizon
+    HORIZON["Planning Horizon:<br/>2 days"]
+    CRSCH -.->|Horizon| HORIZON
+    
+    %% Manual Trigger
+    TRIGGER["Manual Trigger:<br/>Start Scheduling"]
+    TRIGGER -->|User Action| STEP1
+    
+    %% Constraints
+    CONSTRAINTS["Constraints:<br/>Roll Programs<br/>Sequencing Rules<br/>Resource Availability"]
+    CONSTRAINTS -.->|Applied in| STEP6
+    
+    classDef input fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef process fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef output fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef feedback fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef step fill:#e0e0e0,stroke:#424242,stroke-width:1px,color:#000
+    classDef horizon fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    classDef trigger fill:#ffccbc,stroke:#d84315,stroke-width:2px,color:#000
+    classDef constraints fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    
+    class INPUTS,CP,SAP,MES input
+    class CRSCH process
+    class STEP1,STEP2,STEP3,STEP4,STEP5,STEP6,STEP7,STEP8 step
+    class OUTPUTS,OUT1,OUT2,OUT3,OUT4 output
+    class FEEDBACK,FB1,FB2 feedback
+    class HORIZON horizon
+    class TRIGGER trigger
+    class CONSTRAINTS constraints

@@ -1,0 +1,78 @@
+%%{init: {'theme': 'base'}}%%
+stateDiagram-v2
+    [*] --> SKU_GENERATED: SAP: SKU Created
+    
+    SKU_GENERATED --> ORDER_DRESSED: Apriso: Order Dressed
+    ORDER_DRESSED --> ROUTING_GENERATED: Apriso: Routing Generated
+    
+    ROUTING_GENERATED --> FLEXI_PROPOSED: CP: Flexi WOs Proposed
+    FLEXI_PROPOSED --> FIRM_PROPOSED: OC: Firm WOs Proposed
+    
+    FIRM_PROPOSED --> FIRM_REGISTERED: Apriso: Firm WOs Registered
+    FIRM_REGISTERED --> SCHEDULED: CRSCH: Scheduled
+    
+    SCHEDULED --> EXECUTION_READY: Apriso: Ready for Execution
+    EXECUTION_READY --> IN_EXECUTION: Apriso: In Execution
+    
+    IN_EXECUTION --> OPERATION_FEEDBACK: Apriso: Operation Feedback
+    OPERATION_FEEDBACK --> IN_EXECUTION: Continue Execution
+    
+    IN_EXECUTION --> COMPLETED: Apriso: Completed
+    COMPLETED --> FEEDBACK_TO_SAP: SAP: Import WO Results
+    FEEDBACK_TO_SAP --> [*]
+    
+    %% Alternative paths for quality decisions
+    IN_EXECUTION --> KKB_HOLD: Quality Issue (KKB)
+    KKB_HOLD --> SCRAP_DECISION: Quality Decision
+    SCRAP_DECISION --> SCRAPPED: Scrap
+    SCRAPPED --> [*]
+    
+    SCRAP_DECISION --> REUSE_DECISION: Reuse
+    REUSE_DECISION --> FIRM_REGISTERED
+    
+    SCRAP_DECISION --> CONTINUE_DECISION: Continue
+    CONTINUE_DECISION --> IN_EXECUTION
+    
+    SCRAP_DECISION --> REWORK_DECISION: Rework
+    REWORK_DECISION --> ROUTING_MODIFIED: Routing Modified
+    ROUTING_MODIFIED --> IN_EXECUTION
+    
+    %% Cancellation path
+    FLEXI_PROPOSED --> CANCELLED: Order Cancelled
+    FIRM_PROPOSED --> CANCELLED
+    CANCELLED --> [*]
+    
+    note right of SKU_GENERATED
+        Sales Order Created in SAP
+        SKU Definition Provided
+    end note
+    
+    note right of ORDER_DRESSED
+        BOM, Routing Alternatives
+        Production Version, Costing
+    end note
+    
+    note right of FLEXI_PROPOSED
+        Flexi WOs & FF Proposed
+        Based on Supply Chain
+    end note
+    
+    note right of FIRM_PROPOSED
+        Firm WOs Proposed
+        Order Combination Complete
+    end note
+    
+    note right of SCHEDULED
+        Sequencing & Batching
+        Schedule Published
+    end note
+    
+    note right of KKB_HOLD
+        Quality Decision Required
+        Coil Status: KKB
+    end note
+    
+    note right of OPERATION_FEEDBACK
+        Continuous Feedback Loop
+        Status Updates
+    end note

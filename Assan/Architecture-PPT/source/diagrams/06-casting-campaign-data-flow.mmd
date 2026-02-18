@@ -1,0 +1,74 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph INPUTS["INPUTS"]
+        SAP["SAP-ERP<br/>Products, Routings"]
+        MP["Quintiq MP<br/>Casting Demand"]
+        DA["Data Analytics<br/>Distribution Key"]
+        MES["Apriso MES<br/>Firm Reservations<br/>Flexi Reservations"]
+    end
+    
+    subgraph MCSCH["QUINTIQ CASTING SCHEDULER (MCSCH)"]
+        STEP1["1. Read Supply Chain<br/>Inputs from MES & SAP"]
+        STEP2["2. Read Casting Demand<br/>from MP"]
+        STEP3["3. Disaggregate Demand<br/>to SKU Level"]
+        STEP4["4. Create Casting WOs<br/>for Scheduling"]
+        STEP5["5. Read Firm & Flexi<br/>Reservations from MES & CP"]
+        STEP6["6. Assign Casting WOs<br/>to Reservations"]
+        STEP7["7. Create/Update<br/>Casting Schedule"]
+        
+        STEP1 --> STEP2
+        STEP2 --> STEP3
+        STEP3 --> STEP4
+        STEP4 --> STEP5
+        STEP5 --> STEP6
+        STEP6 --> STEP7
+    end
+    
+    subgraph OUTPUTS["OUTPUTS"]
+        OUT1["Casting Campaign<br/>to MES"]
+        OUT2["Casted Coil Forecast<br/>to CP"]
+        OUT3["Casting Schedule<br/>Published"]
+        OUT4["WO Proposals<br/>to MES"]
+    end
+    
+    subgraph FEEDBACK["FEEDBACK LOOPS"]
+        FB1["Firm WO Registry<br/>from MES"]
+        FB2["Operation Feedback<br/>from MES"]
+        FB3["Casting Campaign<br/>Feedback"]
+    end
+    
+    %% Input connections
+    SAP --> STEP1
+    MP --> STEP2
+    DA --> STEP3
+    MES --> STEP5
+    
+    %% Output connections
+    STEP7 --> OUT1
+    STEP7 --> OUT2
+    STEP7 --> OUT3
+    STEP4 --> OUT4
+    
+    %% Feedback connections
+    OUT1 --> FB1
+    OUT3 --> FB2
+    FB1 --> STEP5
+    FB2 --> STEP7
+    FB3 -.->|Continuous| STEP7
+    
+    %% Additional connections
+    CP["Quintiq CP<br/>Flexi WOs"]
+    CP -->|Flexi Reservations| STEP5
+    
+    classDef input fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef process fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef output fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef feedback fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef step fill:#e0e0e0,stroke:#424242,stroke-width:1px,color:#000
+    
+    class INPUTS,SAP,MP,DA,MES input
+    class MCSCH process
+    class STEP1,STEP2,STEP3,STEP4,STEP5,STEP6,STEP7 step
+    class OUTPUTS,OUT1,OUT2,OUT3,OUT4 output
+    class FEEDBACK,FB1,FB2,FB3 feedback
+    class CP input

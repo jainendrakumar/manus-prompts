@@ -1,0 +1,80 @@
+%%{init: {'flowchart': {'curve': 'linear'}, 'theme': 'base'}}%%
+flowchart TB
+    subgraph INPUTS["INPUTS"]
+        CP["Quintiq CP<br/>Flexi WOs<br/>Virtual Materials"]
+        SAP1["SAP-ERP<br/>Sales Orders<br/>Inventory"]
+        MES["Apriso MES<br/>Physical Materials<br/>Firm WOs"]
+    end
+    
+    subgraph OC["QUINTIQ ORDER COMBINER (OC)"]
+        STEP1["1. Read Flexi WOs<br/>from CP"]
+        STEP2["2. Read Physical Materials<br/>from MES & SAP"]
+        STEP3["3. Read Sales Orders<br/>for Grouping"]
+        STEP4["4. Combine Orders<br/>on Materials"]
+        STEP5["5. Create Cutting<br/>Patterns"]
+        STEP6["6. Update Scrap<br/>Calculations"]
+        STEP7["7. Adapt Routings<br/>Based on Patterns"]
+        STEP8["8. Create Firm WOs<br/>& Proposals"]
+        
+        STEP1 --> STEP2
+        STEP2 --> STEP3
+        STEP3 --> STEP4
+        STEP4 --> STEP5
+        STEP5 --> STEP6
+        STEP6 --> STEP7
+        STEP7 --> STEP8
+    end
+    
+    subgraph OUTPUTS["OUTPUTS"]
+        OUT1["Firm WOs<br/>to Scheduler"]
+        OUT2["Cutting Patterns<br/>Published"]
+        OUT3["Adapted Routings<br/>to MES"]
+        OUT4["WO Proposals<br/>to MES"]
+        OUT5["Sales Order<br/>Updates"]
+    end
+    
+    subgraph FEEDBACK["FEEDBACK LOOPS"]
+        FB1["Inventory Updates<br/>from MES"]
+        FB2["Firm WO Registry<br/>from MES"]
+    end
+    
+    %% Input connections
+    CP --> STEP1
+    SAP1 --> STEP2
+    SAP1 --> STEP3
+    MES --> STEP2
+    
+    %% Output connections
+    STEP8 --> OUT1
+    STEP5 --> OUT2
+    STEP7 --> OUT3
+    STEP8 --> OUT4
+    STEP3 --> OUT5
+    
+    %% Feedback connections
+    FB1 -.->|Continuous| STEP2
+    FB2 -.->|Continuous| STEP2
+    
+    %% Planning Horizon
+    HORIZON["Planning Horizon:<br/>1-3 weeks"]
+    OC -.->|Horizon| HORIZON
+    
+    %% Manual Trigger
+    TRIGGER["Manual Trigger:<br/>Start Combination"]
+    TRIGGER -->|User Action| STEP1
+    
+    classDef input fill:#fff9c4,stroke:#f57f17,stroke-width:2px,color:#000
+    classDef process fill:#c8e6c9,stroke:#2e7d32,stroke-width:2px,color:#000
+    classDef output fill:#bbdefb,stroke:#1565c0,stroke-width:2px,color:#000
+    classDef feedback fill:#f8bbd0,stroke:#c2185b,stroke-width:2px,color:#000
+    classDef step fill:#e0e0e0,stroke:#424242,stroke-width:1px,color:#000
+    classDef horizon fill:#f0f0f0,stroke:#666,stroke-width:1px,color:#000
+    classDef trigger fill:#ffccbc,stroke:#d84315,stroke-width:2px,color:#000
+    
+    class INPUTS,CP,SAP1,MES input
+    class OC process
+    class STEP1,STEP2,STEP3,STEP4,STEP5,STEP6,STEP7,STEP8 step
+    class OUTPUTS,OUT1,OUT2,OUT3,OUT4,OUT5 output
+    class FEEDBACK,FB1,FB2 feedback
+    class HORIZON horizon
+    class TRIGGER trigger

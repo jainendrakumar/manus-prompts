@@ -1,0 +1,74 @@
+%%{init: {'theme': 'base'}}%%
+stateDiagram-v2
+    [*] --> S_OP: MP/DP: S&OP Plan
+    
+    S_OP --> FG_FORECAST: DP: FG Forecast
+    FG_FORECAST --> CONSTRAINED_FG: MP: Constrained FG
+    
+    CONSTRAINED_FG --> CC_REQUIREMENT: MP: CC Requirement
+    CC_REQUIREMENT --> DISAGGREGATION: Data Analytics: CC Distribution Key
+    
+    DISAGGREGATION --> CC_DISAGGREGATED: CC Disaggregated to SKU
+    CC_DISAGGREGATED --> ORDER_DRESSED: Apriso: Order Dressed
+    
+    ORDER_DRESSED --> ROUTING_GENERATED: Apriso: Routing Generated
+    ROUTING_GENERATED --> FLEXI_PROPOSED: MCSCH: Flexi WOs & FF Proposed
+    
+    FLEXI_PROPOSED --> FIRM_REGISTERED: Apriso: Firm WOs Registered
+    FIRM_REGISTERED --> EXECUTION_READY: Apriso: Ready for Execution
+    
+    EXECUTION_READY --> IN_EXECUTION: Apriso: In Execution
+    IN_EXECUTION --> OPERATION_FEEDBACK: Apriso: Operation Feedback
+    OPERATION_FEEDBACK --> IN_EXECUTION: Continue Execution
+    
+    IN_EXECUTION --> COMPLETED: Apriso: Completed
+    COMPLETED --> FEEDBACK_TO_SAP: SAP: Record Feedback & Complete WO
+    FEEDBACK_TO_SAP --> [*]
+    
+    %% Feedback loop
+    COMPLETED --> FEEDBACK_TO_MCSCH: MCSCH: WO Feedback Processed
+    FEEDBACK_TO_MCSCH --> [*]
+    
+    %% Cancellation path
+    FLEXI_PROPOSED --> CANCELLED: Campaign Cancelled
+    CANCELLED --> [*]
+    
+    note right of S_OP
+        Sales & Operations Planning
+        15-month horizon
+    end note
+    
+    note right of CC_REQUIREMENT
+        Casted Coil Requirement
+        MP Code Level
+    end note
+    
+    note right of DISAGGREGATION
+        Disaggregation beyond
+        frozen horizon in MCSCH
+    end note
+    
+    note right of CC_DISAGGREGATED
+        SKU Code Level
+        Ready for MES
+    end note
+    
+    note right of FLEXI_PROPOSED
+        Flexible WOs & FF Proposed
+        Based on Casting Demand
+    end note
+    
+    note right of FIRM_REGISTERED
+        Firm WOs Registered
+        Campaign Locked
+    end note
+    
+    note right of IN_EXECUTION
+        Melting & Casting Execution
+        Feedback Continuous
+    end note
+    
+    note right of FEEDBACK_TO_MCSCH
+        Feedback Loop to Scheduler
+        Plan Updates if Needed
+    end note

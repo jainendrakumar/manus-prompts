@@ -1,0 +1,17 @@
+# QMeter Analyzer - Label Map Example
+# Maps source filenames to human-readable labels
+#
+# Usage: qmeter-analyze --inputs *.zip --label-map labels.yaml
+
+# ZIP file labels
+QMeter-20Runs_20260217.zip: "On-Prem VMware DCPFOISAPP019 (44 runs)"
+QMeter-2Runs_20260214.zip: "On-Prem VMware DCPFOISAPP019 (24 runs)"
+Report_20260215.zip: "Azure HBv2 poc-quintiq-ES (single)"
+Report_AzureHBv2_20260215.zip: "Azure HBv2 poc-quintiq-ES (20 runs)"
+Result_DS_pu2vwcrisproj6.zip: "On-Prem VMware PU2VWCRISPROJ6 (12 runs)"
+testrun.zip: "Test Run Collection"
+
+# Standalone XML labels
+Report_13.xml: "Azure HBv2 Run 13"
+Report_14.xml: "Azure HBv2 Run 14"
+Report_15.xml: "Azure HBv2 Run 15"

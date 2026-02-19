@@ -1,0 +1,23 @@
+# QMeter Analyzer - Metric Rules Example
+# Override directionality for specific metrics
+#
+# Usage: qmeter-analyze --inputs *.zip --metric-rules rules.yaml
+#
+# Directionality options:
+#   lower_is_better  - For durations, latencies (default for QMeter)
+#   higher_is_better - For throughput, bandwidth metrics
+#
+# Keys are substring-matched against metric names
+
+# Default QMeter metrics (these are built-in, shown for reference)
+# score1: lower_is_better
+# score4: lower_is_better
+# score16: lower_is_better
+# avg_runtime: lower_is_better
+# group_score: lower_is_better
+# std_dev: lower_is_better
+
+# Custom overrides (uncomment and modify as needed)
+# custom_throughput: higher_is_better
+# custom_iops: higher_is_better
+# custom_bandwidth: higher_is_better

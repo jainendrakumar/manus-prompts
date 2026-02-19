@@ -1,0 +1,2 @@
+7779cabc742b1baea3c11d94a83fdd83a666e0d1050ba226d17574826c69d7fc  qmeter-analyzer-v1.0.0.zip
+8e2cae6e9cf22e7a00ee7a05c32835e7242eed384a2e5fe0b3121ec4ddafb625  sample-output.zip

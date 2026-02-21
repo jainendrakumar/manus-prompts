@@ -1,0 +1,81 @@
+## QMeter Architecture Diagrams
+
+### High-Level Component Diagram
+
+```mermaid
+graph TD
+    A[UI/Config] --> B(Orchestrator);
+    B --> C{Benchmark Modules};
+    C --> D[Scoring];
+    D --> E(Export);
+
+    subgraph "Benchmark Modules"
+        C1[Memory Test]
+        C2[Algorithm Test]
+        C3[Quill Speed Test]
+        C4[Propagation Test]
+        C5[Dataset-Store Test]
+    end
+
+    B -- Manages --> C;
+    C -- Feeds results to --> D;
+```
+
+### Sequence Diagram: Interactive Mode
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant QMeter_UI
+    participant Orchestrator
+    participant Benchmark_Modules
+
+    User->>QMeter_UI: Clicks "Run Test"
+    QMeter_UI->>Orchestrator: RunBenchmark()
+    Orchestrator->>Benchmark_Modules: DelegateBenchmarkJob()
+    Benchmark_Modules-->>Orchestrator: Benchmark results
+    Orchestrator-->>QMeter_UI: Test complete
+    User->>QMeter_UI: Clicks "Export..."
+    QMeter_UI->>Orchestrator: ExportRun()
+    Orchestrator-->>User: results.xml
+```
+
+### Sequence Diagram: Headless Mode
+
+```mermaid
+sequenceDiagram
+    participant QServer
+    participant Orchestrator
+    participant Benchmark_Modules
+    participant File_System
+
+    QServer->>Orchestrator: Startup with /custom=runandexport
+    Orchestrator->>Benchmark_Modules: RunBenchmark() & DelegateBenchmarkJob()
+    Benchmark_Modules-->>Orchestrator: Benchmark results
+    Orchestrator->>Orchestrator: Daemon_Heartbeat detects completion
+    Orchestrator->>File_System: ExportRun() to C:\QMeter\results.xml
+```
+
+### Data-Flow Diagram: Score1/4/16 Computation
+
+```mermaid
+graph TD
+    A[Raw Benchmark Results] --> B{Group by Category & Concurrent Datasets};
+    B --> C{Calculate Average Runtime per Group};
+    C --> D{Normalize against Gold Standard};
+    D --> E[Final Scores: Score1, Score4, Score16];
+
+    subgraph "Input"
+        A
+    end
+
+    subgraph "Processing"
+        B
+        C
+        D
+    end
+
+    subgraph "Output"
+        E
+    end
+```

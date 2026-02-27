@@ -1,0 +1,48 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <mxCell id="2" value="LibServicePlanner (Core Domain)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="40" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="3" value="LibIndianRailways (Domain Specifics &amp; Opt)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="140" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="4" value="LibOpt (Optimization Framework)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="540" y="140" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="5" value="DataExchangeFramework (Integration)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="140" y="40" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="6" value="LibServicePlannerUIConfig (UI Layer)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="-60" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="7" value="Testing Frameworks (FTF, PTF, UTF)" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="340" y="240" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="8" value="ScenarioManager" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+      <mxGeometry x="140" y="140" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="9" value="Depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="6" target="2">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="10" value="Depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="2" target="5">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="11" value="Depends on" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="3" target="2">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="12" value="Uses" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="3" target="4">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="13" value="Tests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="7" target="3">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="14" value="Tests" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="7" target="2">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="15" value="Manages" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="8" target="2">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
